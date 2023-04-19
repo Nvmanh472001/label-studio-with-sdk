@@ -1,0 +1,41 @@
+<View>
+    <Image name="image" value="$ocr" />
+    
+    <Labels name="label" toName="image" > 
+        <Label value="person_name" background="#FFA39E"/>
+        <Label value="dob_key" background="#D4380D"/>
+        <Label value="dob_value" background="#FFC069"/>
+        <Label value="gender_key" background="#AD8B00"/>
+        <Label value="gender_value" background="#D3F261"/>
+        <Label value="phonenumber_key" background="#389E0D"/>
+        <Label value="phonenumber_value" background="#5CDBD3"/>
+        <Label value="email_key" background="#096DD9"/>
+        <Label value="email_value" background="#ADC6FF"/>
+        <Label value="address_key" background="#9254DE"/>
+        <Label value="address_value" background="#F759AB"/>
+        <Label value="socical_address_value" background="#FFA39E"/>
+        <Label value="education" background="#D4380D"/>
+        <Label value="education_name" background="#FFC069"/>
+        <Label value="education_time" background="#AD8B00"/>
+        <Label value="experience" background="#D3F261"/>
+        <Label value="experience_name" background="#389E0D"/>
+        <Label value="experience_time" background="#5CDBD3"/>
+        <Label value="information" background="#096DD9"/>
+        <Label value="undefined" background="#ADC6FF"/>
+    </Labels>
+
+    <Rectangle name="bbox" toName="image" strokeWidth="3"/>
+
+    <TextArea 
+        name="transcription"
+        toName="image"
+        editable="true"
+        perRegion="true"
+        required="true"
+        maxSubmissions="1"
+        rows="5"
+        placeholder="Recognized Text"
+        displayMode="region-list"
+    />
+
+</View>
