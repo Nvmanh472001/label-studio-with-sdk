@@ -66,7 +66,7 @@ def annotation_fommater(annotation):
 
     id_gen = str(uuid4())[:10]
     x = points[0][0]
-    y = points[0][0]
+    y = points[0][1]
 
     region_width = dist(points[0], points[1])
     region_height = dist(points[0], points[3])
