@@ -4,18 +4,13 @@ from math import dist
 from pathlib import Path
 from PIL import Image
 import pandas as pd
-import glob
 import numpy as np
 from uuid import uuid4
 
 
-def load_image(image_path):
-    image = Image.open(image_path).convert("RGB")
-    w, h = image.size
-    return image, (w, h)
-
 def create_image_url(image_path):
     return f"/data/local-files/?d={image_path}"
+
 
 def read_data_from_path(file_name):
     with open(file_name, "r", encoding="utf-8") as f:
@@ -23,42 +18,46 @@ def read_data_from_path(file_name):
     data = [json.loads(line) for line in data]
     return data
 
+
 def get_label_from_path(label_file_path):
-    df = pd.read_csv(label_file_path, delimiter='\s', header=None, engine="python")
+    df = pd.read_csv(label_file_path, delimiter="\s", header=None, engine="python")
     id2labels = dict(zip(df[0].tolist(), df[1].tolist()))
     return id2labels
 
+
 def convert_data_to_lbs_format(save_path, data, labels):
     """
-        Convert Data to Label Studio Format
+    Convert Data to Label Studio Format
     """
+    tasks = []
     for line in data:
-        image_path = f"./data/{line['file_name']}"
-        image, size = load_image(image_path)
+        h = line["height"]
+        w = line["width"]
 
-        annotations = line['annotations']
+        annotations = line["annotations"]
         result = []
         for annotation in annotations:
-            annotation.update({
-                "label": labels[annotation["label"]],
-                "image_size": size,
-            })
-            
+            annotation.update(
+                {
+                    "label": labels[annotation["label"]],
+                    "image_size": (w, h),
+                }
+            )
+
             result.extend(annotation_fommater(annotation))
 
         lbs_format = {
-            'data':{
-                'ocr': create_image_url(line["file_name"])
-            },
-            'predictions': [{
-                'result': result,
-            }]
+            "data": {"ocr": create_image_url(line["file_name"])},
+            "predictions": [
+                {
+                    "result": result,
+                }
+            ],
         }
+        tasks.append(lbs_format)
 
-        with open(save_path, mode="w") as buf:
-            json.dump(lbs_format, buf, indent=2)
-
-        break
+    with open(save_path, mode="w") as buf:
+        json.dump(tasks, buf, indent=2)
 
 
 def annotation_fommater(annotation):
@@ -77,17 +76,17 @@ def annotation_fommater(annotation):
         "original_height": h,
         "image_rotation": 0,
         "value": {
-            'x': 100 *x / w,
-            'y': 100 *y / h,
-            'width': 100 * region_width / w,
-            'height': 100 * region_height / h,
-            'rotation': 0
+            "x": 100 * x / w,
+            "y": 100 * y / h,
+            "width": 100 * region_width / w,
+            "height": 100 * region_height / h,
+            "rotation": 0,
         },
         "id": id_gen,
         "from_name": "bbox",
         "to_name": "image",
         "type": "rectangle",
-        "origin": "manual"
+        "origin": "manual",
     }
 
     text_annotations = {
@@ -95,14 +94,12 @@ def annotation_fommater(annotation):
         "original_height": h,
         "image_rotation": 0,
         "value": {
-            'x': 100 *x / w,
-            'y': 100 *y / h,
-            'width': 100 * region_width / w,
-            'height': 100 * region_height / h,
-            'rotation': 0,
-            'text': [
-                annotation["text"]
-            ]
+            "x": 100 * x / w,
+            "y": 100 * y / h,
+            "width": 100 * region_width / w,
+            "height": 100 * region_height / h,
+            "rotation": 0,
+            "text": [annotation["text"]],
         },
         "id": id_gen,
         "from_name": "transcription",
@@ -116,14 +113,12 @@ def annotation_fommater(annotation):
         "original_height": h,
         "image_rotation": 0,
         "value": {
-            'x': 100 *x / w,
-            'y': 100 *y / h,
-            'width': 100 * region_width / w,
-            'height': 100 * region_height / h,
-            'rotation': 0,
-            'labels': [
-                annotation["label"]
-            ]
+            "x": 100 * x / w,
+            "y": 100 * y / h,
+            "width": 100 * region_width / w,
+            "height": 100 * region_height / h,
+            "rotation": 0,
+            "labels": [annotation["label"]],
         },
         "id": id_gen,
         "from_name": "label",
@@ -137,13 +132,17 @@ def annotation_fommater(annotation):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="./data")
 
     args = parser.parse_args()
     fpath_pattern = f"{args.data_dir}/*.txt"
-    label_fpath, train_fpath, test_fpath = glob.glob(fpath_pattern)
-    
+
+    test_fpath = f"{args.data_dir}/test.txt"
+    train_fpath = f"{args.data_dir}/train.txt"
+    label_fpath = f"{args.data_dir}/class_list.txt"
+
     labels = get_label_from_path(label_fpath)
     train_data = read_data_from_path(train_fpath)
     test_data = read_data_from_path(test_fpath)

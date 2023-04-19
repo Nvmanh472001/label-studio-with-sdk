@@ -1,17 +1,36 @@
-version: '3'
+version: "3"
 services:
   label-studio:
     image: heartexlabs/label-studio
     ports:
       - 8080:8080
     volumes:
-      - ./data:/data
+      - cv-data:/data
     env_file:
       - .env
+    expose:
+      - 8080
+    networks:
+      - ocr-prelabeling
 
-    
   pre-annotations:
-    build: 
+    build:
       context: .
       dockerfile: ./Dockerfile
-    
+    depends_on:
+      - label-studio
+    volumes:
+      - cv-data:/data
+    networks:
+      - ocr-prelabeling
+
+networks:
+  ocr-prelabeling:
+
+volumes:
+  cv-data:
+    driver: local
+    driver_opts:
+      type: volume
+      o: bind
+      device: ./data

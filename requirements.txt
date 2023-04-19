@@ -1,2 +1,5 @@
 label-studio-sdk
 python-dotenv
+Pillow
+pandas
+numpy
